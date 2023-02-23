@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Ex25_Files</string>
+    <!--Exposed dropdown menu options-->
+    <string name="resources">Application resources</string>
+    <string name="assets">Application assets</string>
+    <string name="private_internal">Application private internal storage</string>
+    <string name="private_internal_cache">Application private internal cache storage</string>
+    <string name="private_external">Application private external storage</string>
+    <string name="private_external_cache">Application private external cache storage</string>
+    <string name="public_media">Public media storage</string>
+    <string name="public_others">Public other storage</string>
+    <string name="hint_storage_type">Select the storage type to be accessed</string>
+    <string name="hint_contents">Enter the desired content for the file</string>
+    <string name="item_description">Image file</string>
+    <string name="save_file">Save file</string>
+    <string name="resource_not_found">The required resource file cannot be located</string>
+    <string name="unknown_error">There was some problema when reading the required file</string>
+    <string name="file_not_found">The required file does not exist yet.\nCreate it by clicling the Save button.</string>
+</resources>

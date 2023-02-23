@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2022
+  ~ David de Andrés and Juan Carlos Ruiz
+  ~ Development of apps for mobile devices
+  ~ Universitat Politècnica de València
+  -->
+
+<resources>
+
+    <string-array name="file_storage_type">
+        <item>@string/resources</item>
+        <item>@string/assets</item>
+        <item>@string/private_internal</item>
+        <item>@string/private_internal_cache</item>
+        <item>@string/private_external</item>
+        <item>@string/public_media</item>
+        <item>@string/public_others</item>
+    </string-array>
+
+</resources>
