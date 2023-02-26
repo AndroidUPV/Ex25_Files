@@ -4,7 +4,11 @@
   ~ Development of apps for mobile devices
   ~ Universitat Politècnica de València
   -->
-
+<!--
+  ~ Displays a dropdown menu with different options to access files in the storage space.
+  ~ A TextField displays the text that file stores and the user can modify it when appropriate.
+  ~ A RecyclerView displays the different PNG images available in the Images storage space.
+  -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -12,6 +16,7 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
+    <!-- Dropdown menu representing the different options available for storage space-->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilFileStorageType"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
@@ -31,6 +36,7 @@
             app:simpleItems="@array/file_storage_type" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!--Displays the content of the file, which the user can modify-->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilFileContent"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -48,6 +54,10 @@
             android:layout_height="wrap_content" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!--
+      ~ Saves changes in the content of the selected file or
+      ~ creates a new image file when accessing the Images storage space.
+      -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/bSave"
         android:layout_width="wrap_content"
@@ -57,6 +67,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tilFileContent" />
 
+    <!--Displays a grid with PNG images in the Images storage space-->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="0dp"
@@ -69,5 +80,5 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/bSave"
         app:spanCount="3"
-        tools:listitem="@layout/item_icon" />
+        tools:listitem="@layout/item_picture" />
 </androidx.constraintlayout.widget.ConstraintLayout>

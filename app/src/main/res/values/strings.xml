@@ -1,3 +1,10 @@
+<!--
+  ~ Copyright (c) 2022
+  ~ David de Andrés and Juan Carlos Ruiz
+  ~ Development of apps for mobile devices
+  ~ Universitat Politècnica de València
+  -->
+
 <resources>
     <string name="app_name">Ex25_Files</string>
     <!--Exposed dropdown menu options-->
@@ -7,13 +14,28 @@
     <string name="private_internal_cache">Application private internal cache storage</string>
     <string name="private_external">Application private external storage</string>
     <string name="private_external_cache">Application private external cache storage</string>
+    <string name="private_external_pictures">Application private external pictures storage</string>
     <string name="public_media">Public media storage</string>
     <string name="public_others">Public other storage</string>
+    <!--Strings for the ShowRationaleDialogFragment-->
+    <string name="title_read_media_images">Read media images</string>
+    <string name="title_read_external_storage">Read external storage</string>
+    <string name="message_read_media_images">You must grant permission to the app to read images stored in public storage that can be shared among all the apps.</string>
+    <string name="message_read_external_storage">You must grant permission to the app to read files located in public storage that can be shared among all the apps.</string>
+    <string name="rationale_dialog">Why does the app need these permissions?</string>
+    <string name="understood">Understood</string>
+    <!--Strings for the item_picture layout-->
+    <string name="item_description">Image file</string>
+    <!--Strings for the activity_main layout-->
+    <string name="save_file">Save file</string>
     <string name="hint_storage_type">Select the storage type to be accessed</string>
     <string name="hint_contents">Enter the desired content for the file</string>
-    <string name="item_description">Image file</string>
-    <string name="save_file">Save file</string>
+    <!--Messages to display in case of error-->
     <string name="resource_not_found">The required resource file cannot be located</string>
-    <string name="unknown_error">There was some problema when reading the required file</string>
-    <string name="file_not_found">The required file does not exist yet.\nCreate it by clicling the Save button.</string>
+    <string name="unknown_error">There was some problem when accessing the desired file</string>
+    <string name="file_not_found">The required file does not exist yet.\nCreate it by clicking the Save button.</string>
+    <string name="external_storage_unreadable">External storage is not in read mode</string>
+    <string name="external_storage_unwritable">External storage is not in writable mode</string>
+    <string name="no_activity">There is no application that can manage this file.</string>
+    <string name="no_permission">The required operation cannot be executed due to missing permissions.</string>
 </resources>

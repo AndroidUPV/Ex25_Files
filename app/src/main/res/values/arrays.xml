@@ -7,12 +7,15 @@
 
 <resources>
 
+    <!--Storage space options to display in the dropdown menu-->
     <string-array name="file_storage_type">
         <item>@string/resources</item>
         <item>@string/assets</item>
         <item>@string/private_internal</item>
         <item>@string/private_internal_cache</item>
         <item>@string/private_external</item>
+        <item>@string/private_external_cache</item>
+        <item>@string/private_external_pictures</item>
         <item>@string/public_media</item>
         <item>@string/public_others</item>
     </string-array>
