@@ -338,7 +338,7 @@ class FilesDataSourceImpl @Inject constructor(
                 // Use the ContentResolver to get a FileDescriptor for the provided URI
                 context.contentResolver.openFileDescriptor(intent.data!!, "r")
                     .use { parcelFileDescriptor ->
-                        // Open an input stream to read the file ocntent
+                        // Open an input stream to read the file content
                         FileInputStream(parcelFileDescriptor?.fileDescriptor).use { fileInputStream ->
                             fileInputStream.bufferedReader().use { reader ->
                                 // Completely read the reader as a String
