@@ -29,7 +29,7 @@ import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 /**
- * Repository for reading and updating the content of text files,and creating and displaying
+ * DataSource for reading and updating the content of text files,and creating and displaying
  * PNG image files in different storage options.
  * It implements the FilesDataSource interface.
  */
