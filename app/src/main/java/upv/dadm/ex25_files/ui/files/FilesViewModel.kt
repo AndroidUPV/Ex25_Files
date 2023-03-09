@@ -426,6 +426,9 @@ class FilesViewModel @Inject constructor(
         _isSaveButtonVisible.value = true
     }
 
+    /**
+     * Clears the error received.
+     */
     fun clearError() {
         _error.value = null
     }
