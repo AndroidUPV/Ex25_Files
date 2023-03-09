@@ -147,9 +147,7 @@ class FilesFragment : Fragment(R.layout.fragment_files) {
                         // Show a dialog with the required rationale
                             findNavController().navigate(R.id.actionShowRationaleDialogFragment)
                         // Request the required permission from the user
-                        else {
-                            requestPermissionLauncher.launch(permissionViewModel.requiredPermission.value!!)
-                        }
+                        else requestPermissionLauncher.launch(permissionViewModel.requiredPermission.value!!)
                     }
                     // Load the contents of a text file from public shared storage
                     getString(R.string.public_others) -> {
