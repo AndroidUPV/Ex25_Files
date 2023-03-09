@@ -64,6 +64,9 @@ class FilesFragment : Fragment(R.layout.fragment_files) {
     private val binding
         get() = _binding!!
 
+    // Holds a reference to the RecyclerView's adapter
+    private lateinit var adapter: PictureAdapter
+
     // Shows a generic dialog asking the user for the required permission and performs the
     // desired task if the permission is granted
     private val requestPermissionLauncher =
@@ -110,55 +113,19 @@ class FilesFragment : Fragment(R.layout.fragment_files) {
         _binding = FragmentFilesBinding.bind(view)
 
         // Adapter for the RecyclerView with Vertical LinearLayoutManager
-        val adapter = PictureAdapter()
+        adapter = PictureAdapter()
         binding.recyclerView.adapter = adapter
 
-        // Execute an action whenever an element from the dropdown menu is clicked
-        binding.tvFileStorageType.onItemClickListener =
-            AdapterView.OnItemClickListener { _, _, _, _ ->
-                // Determine the action according to text displayed
-                when (binding.tvFileStorageType.editableText.toString()) {
-                    // Load the contents of a resource file
-                    getString(R.string.resources) -> viewModel.loadResourceFile()
-                    // Load the contents of an asset file
-                    getString(R.string.assets) -> viewModel.loadAssetFile()
-                    // Load the contents of a text file from private internal storage
-                    getString(R.string.private_internal) -> viewModel.loadPrivateInternalFile()
-                    // Load the contents of a text file cached in private internal storage
-                    getString(R.string.private_internal_cache) -> viewModel.loadPrivateInternalCacheFile()
-                    // Load the contents of a text file from private external storage
-                    getString(R.string.private_external) -> viewModel.loadPrivateExternalFile()
-                    // Load the contents of a text file cached in private external storage
-                    getString(R.string.private_external_cache) -> viewModel.loadPrivateExternalCacheFile()
-                    // Load the PNG images from private external storage
-                    getString(R.string.private_external_pictures) -> viewModel.loadPrivateExternalPictureFiles()
-                    // Load the PNG images from public shared storage
-                    getString(R.string.public_media) -> {
-                        // Sets the required permission
-                        permissionViewModel.setRequiredPermission(
-                            getRequiredPermission(PermissionsTypes.READ_PUBLIC_IMAGES)
-                        )
-                        // Check whether the required permission is granted
-                        if (isPermissionGranted(permissionViewModel.requiredPermission.value!!))
-                        // Get the content of the file from public shared storage
-                            viewModel.loadPublicPictureFiles()
-                        // Check whether a rationale about the needs for this permission must be displayed
-                        else if (shouldShowRequestPermissionRationale(permissionViewModel.requiredPermission.value!!))
-                        // Show a dialog with the required rationale
-                            findNavController().navigate(R.id.actionShowRationaleDialogFragment)
-                        // Request the required permission from the user
-                        else requestPermissionLauncher.launch(permissionViewModel.requiredPermission.value!!)
-                    }
-                    // Load the contents of a text file from public shared storage
-                    getString(R.string.public_others) -> {
-                        getPublicExternalOtherFile()
-                    }
-                }
-                // Hide the soft keyboard
-                hideKeyboard(binding.tvFileStorageType)
-            }
+        setupDropDownMenu()
+        setupSaveButton()
+        setupObservers()
+    }
 
-        // Execute the required action when the save button is clicked
+    /**
+     * Executes the required action when the save button is clicked.
+     */
+    private fun setupSaveButton() {
+
         binding.bSave.setOnClickListener {
             // Determine the action according to the text displayed in the dropdown menu
             when (binding.tvFileStorageType.editableText.toString()) {
@@ -205,7 +172,61 @@ class FilesFragment : Fragment(R.layout.fragment_files) {
             // Hide the soft keyboard
             hideKeyboard(binding.bSave)
         }
+    }
 
+    /**
+     * Executes an action whenever an element from the dropdown menu is clicked.
+     */
+    private fun setupDropDownMenu() {
+        binding.tvFileStorageType.onItemClickListener =
+            AdapterView.OnItemClickListener { _, _, _, _ ->
+                // Determine the action according to text displayed
+                when (binding.tvFileStorageType.editableText.toString()) {
+                    // Load the contents of a resource file
+                    getString(R.string.resources) -> viewModel.loadResourceFile()
+                    // Load the contents of an asset file
+                    getString(R.string.assets) -> viewModel.loadAssetFile()
+                    // Load the contents of a text file from private internal storage
+                    getString(R.string.private_internal) -> viewModel.loadPrivateInternalFile()
+                    // Load the contents of a text file cached in private internal storage
+                    getString(R.string.private_internal_cache) -> viewModel.loadPrivateInternalCacheFile()
+                    // Load the contents of a text file from private external storage
+                    getString(R.string.private_external) -> viewModel.loadPrivateExternalFile()
+                    // Load the contents of a text file cached in private external storage
+                    getString(R.string.private_external_cache) -> viewModel.loadPrivateExternalCacheFile()
+                    // Load the PNG images from private external storage
+                    getString(R.string.private_external_pictures) -> viewModel.loadPrivateExternalPictureFiles()
+                    // Load the PNG images from public shared storage
+                    getString(R.string.public_media) -> {
+                        // Sets the required permission
+                        permissionViewModel.setRequiredPermission(
+                            getRequiredPermission(PermissionsTypes.READ_PUBLIC_IMAGES)
+                        )
+                        // Check whether the required permission is granted
+                        if (isPermissionGranted(permissionViewModel.requiredPermission.value!!))
+                        // Get the content of the file from public shared storage
+                            viewModel.loadPublicPictureFiles()
+                        // Check whether a rationale about the needs for this permission must be displayed
+                        else if (shouldShowRequestPermissionRationale(permissionViewModel.requiredPermission.value!!))
+                        // Show a dialog with the required rationale
+                            findNavController().navigate(R.id.actionShowRationaleDialogFragment)
+                        // Request the required permission from the user
+                        else requestPermissionLauncher.launch(permissionViewModel.requiredPermission.value!!)
+                    }
+                    // Load the contents of a text file from public shared storage
+                    getString(R.string.public_others) -> {
+                        getPublicExternalOtherFile()
+                    }
+                }
+                // Hide the soft keyboard
+                hideKeyboard(binding.tvFileStorageType)
+            }
+    }
+
+    /**
+     * Sets up observers to react to changes in the UI state.
+     */
+    private fun setupObservers() {
         // Display the content of the selected text file
         viewModel.fileContent.observe(viewLifecycleOwner) { fileContent ->
             binding.etFileContents.setText(fileContent)
