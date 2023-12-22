@@ -1,8 +1,12 @@
 /*
- * Copyright (c) 2022
- * David de Andrés and Juan Carlos Ruiz
- * Development of apps for mobile devices
- * Universitat Politècnica de València
+ * Copyright (c) 2022-2023 Universitat Politècnica de València
+ * Authors: David de Andrés and Juan Carlos Ruiz
+ *          Fault-Tolerant Systems
+ *          Instituto ITACA
+ *          Universitat Politècnica de València
+ *
+ * Distributed under MIT license
+ * (See accompanying file LICENSE.txt)
  */
 
 package upv.dadm.ex25_files.data.files
@@ -23,7 +27,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import upv.dadm.ex25_files.R
 import upv.dadm.ex25_files.model.Picture
-import java.io.*
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
@@ -306,7 +314,8 @@ class FilesDataSourceImpl @Inject constructor(
                     // Add the Bitmap to the ContentResolver using the provided stream
                     context.contentResolver.openOutputStream(uri).use { outputsStream ->
                         // Write the image into the stream
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputsStream)
+                        if (outputsStream != null)
+                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputsStream)
                     }
                     // Clear the pending flag to state that the image file is already created (for Android API > 28)
                     if (Build.VERSION.SDK_INT > 28) {

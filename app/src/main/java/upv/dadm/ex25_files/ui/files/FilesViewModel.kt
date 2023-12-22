@@ -1,8 +1,12 @@
 /*
- * Copyright (c) 2022
- * David de Andrés and Juan Carlos Ruiz
- * Development of apps for mobile devices
- * Universitat Politècnica de València
+ * Copyright (c) 2022-2023 Universitat Politècnica de València
+ * Authors: David de Andrés and Juan Carlos Ruiz
+ *          Fault-Tolerant Systems
+ *          Instituto ITACA
+ *          Universitat Politècnica de València
+ *
+ * Distributed under MIT license
+ * (See accompanying file LICENSE.txt)
  */
 
 package upv.dadm.ex25_files.ui.files
@@ -131,15 +135,14 @@ class FilesViewModel @Inject constructor(
                 .fold(
                     onSuccess = { result ->
                         _fileContent.value = result
-                        // The file content can be edited
-                        enableVisibilityEditionAndSaving()
                     },
                     onFailure = { exception ->
                         _error.value = exception
                         _fileContent.value = ""
-                        disableVisibilityEditionAndSaving()
                     }
                 )
+            // The file content can be edited
+            enableVisibilityEditionAndSaving()
         }
 
     /**
@@ -171,15 +174,14 @@ class FilesViewModel @Inject constructor(
                 .fold(
                     onSuccess = { result ->
                         _fileContent.value = result
-                        // The file content can be edited
-                        enableVisibilityEditionAndSaving()
                     },
                     onFailure = { exception ->
-                        _fileContent.value = ""
                         _error.value = exception
-                        disableVisibilityEditionAndSaving()
+                        _fileContent.value = ""
                     }
                 )
+            // The file content can be edited
+            enableVisibilityEditionAndSaving()
         }
 
     /**

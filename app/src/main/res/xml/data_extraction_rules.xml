@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2022-2023 Universitat Politècnica de València
+  ~ Authors: David de Andrés and Juan Carlos Ruiz
+  ~          Fault-Tolerant Systems
+  ~          Instituto ITACA
+  ~          Universitat Politècnica de València
+  ~
+  ~ Distributed under MIT license
+  ~ (See accompanying file LICENSE.txt)
+  -->
+
+<!--
    Sample data extraction rules file; uncomment and customize as necessary.
    See https://developer.android.com/about/versions/12/backup-restore#xml-changes
    for details.

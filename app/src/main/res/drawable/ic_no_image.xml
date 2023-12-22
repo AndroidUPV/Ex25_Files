@@ -1,3 +1,14 @@
+<!--
+  ~ Copyright (c) 2022-2023 Universitat Politècnica de València
+  ~ Authors: David de Andrés and Juan Carlos Ruiz
+  ~          Fault-Tolerant Systems
+  ~          Instituto ITACA
+  ~          Universitat Politècnica de València
+  ~
+  ~ Distributed under MIT license
+  ~ (See accompanying file LICENSE.txt)
+  -->
+
 <vector android:height="100dp" android:tint="#000000"
     android:viewportHeight="24" android:viewportWidth="24"
     android:width="100dp" xmlns:android="http://schemas.android.com/apk/res/android">
