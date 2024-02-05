@@ -26,9 +26,13 @@ import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import upv.dadm.ex25_files.R
 import upv.dadm.ex25_files.databinding.FragmentFilesBinding
 import upv.dadm.ex25_files.utils.ExternalStorageNotReadable
@@ -81,9 +85,11 @@ class FilesFragment : Fragment(R.layout.fragment_files) {
                     android.Manifest.permission.READ_EXTERNAL_STORAGE ->
                         // Display PNG images from public shared storage
                         viewModel.loadPublicPictureFiles()
+
                     android.Manifest.permission.WRITE_EXTERNAL_STORAGE ->
                         // Update the text file content in public shared storage
                         viewModel.savePublicPictureFiles()
+
                     else -> {} // Nothing to do for other permissions
                 }
             // Display a message if permission are denied
@@ -93,21 +99,17 @@ class FilesFragment : Fragment(R.layout.fragment_files) {
     // Shows a generic form for choosing a text file and reads its content if the operation is confirmed
     private val readPublicOtherLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                if (result.data != null)
-                    viewModel.loadPublicOtherFile(result.data!!)
-            }
+            // If RESULT_OK then result.data is the Intent to load the file
+            // Otherwise result.data is null and the TextBox will be empty
+            viewModel.loadPublicOtherFile(result.data)
         }
 
-    // Shows a generic form for choosing a text file and updates its content if the operation us confirmed
+    // Shows a generic form for choosing a text file and updates its content if the operation is confirmed
     private val writePublicOtherLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 if (result.data != null)
-                    viewModel.savePublicOtherFile(
-                        result.data!!,
-                        binding.etFileContents.text.toString()
-                    )
+                    viewModel.savePublicOtherFile(result.data!!)
             }
         }
 
@@ -130,7 +132,7 @@ class FilesFragment : Fragment(R.layout.fragment_files) {
      */
     private fun setupSaveButton() {
 
-        binding.bSave.setOnClickListener {
+        binding.bSave.setOnClickListener { _ ->
             // Determine the action according to the text displayed in the dropdown menu
             when (binding.tvFileStorageType.editableText.toString()) {
                 // Update the content of the file in private internal storage
@@ -155,16 +157,16 @@ class FilesFragment : Fragment(R.layout.fragment_files) {
                         getRequiredPermission(PermissionsTypes.WRITE_PUBLIC_IMAGES)
                     )
                     // Check whether the required permission is granted
-                    if (isPermissionGranted(permissionViewModel.requiredPermission.value!!))
+                    if (isPermissionGranted(permissionViewModel.requiredPermission.value))
                     // Create the PNG image file in public shared storage
                         viewModel.savePublicPictureFiles()
                     // Check whether a rationale about the needs for this permission must be displayed
-                    else if (shouldShowRequestPermissionRationale(permissionViewModel.requiredPermission.value!!))
+                    else if (shouldShowRequestPermissionRationale(permissionViewModel.requiredPermission.value))
                     // Show a dialog with the required rationale
                         findNavController().navigate(R.id.actionShowRationaleDialogFragment)
                     // Request the required permission from the user
                     else {
-                        requestPermissionLauncher.launch(permissionViewModel.requiredPermission.value!!)
+                        requestPermissionLauncher.launch(permissionViewModel.requiredPermission.value)
                     }
                 }
                 // Update the content of the file in public shared storage
@@ -207,15 +209,15 @@ class FilesFragment : Fragment(R.layout.fragment_files) {
                             getRequiredPermission(PermissionsTypes.READ_PUBLIC_IMAGES)
                         )
                         // Check whether the required permission is granted
-                        if (isPermissionGranted(permissionViewModel.requiredPermission.value!!))
+                        if (isPermissionGranted(permissionViewModel.requiredPermission.value))
                         // Get the content of the file from public shared storage
                             viewModel.loadPublicPictureFiles()
                         // Check whether a rationale about the needs for this permission must be displayed
-                        else if (shouldShowRequestPermissionRationale(permissionViewModel.requiredPermission.value!!))
+                        else if (shouldShowRequestPermissionRationale(permissionViewModel.requiredPermission.value))
                         // Show a dialog with the required rationale
                             findNavController().navigate(R.id.actionShowRationaleDialogFragment)
                         // Request the required permission from the user
-                        else requestPermissionLauncher.launch(permissionViewModel.requiredPermission.value!!)
+                        else requestPermissionLauncher.launch(permissionViewModel.requiredPermission.value)
                     }
                     // Load the contents of a text file from public shared storage
                     getString(R.string.public_others) -> {
@@ -231,59 +233,78 @@ class FilesFragment : Fragment(R.layout.fragment_files) {
      * Sets up observers to react to changes in the UI state.
      */
     private fun setupObservers() {
-        // Display the content of the selected text file
-        viewModel.fileContent.observe(viewLifecycleOwner) { fileContent ->
-            binding.etFileContents.setText(fileContent)
-        }
-        // Prevent the edition of files that cannot be updated
-        viewModel.isFileContentEditable.observe(viewLifecycleOwner) { isEditable ->
-            binding.etFileContents.isEnabled = isEditable
-        }
-        // Update the visibility of the edit text and RecyclerView according to the selected action
-        viewModel.isFileContentVisible.observe(viewLifecycleOwner) { isVisible ->
-            binding.tilFileContent.visibility =
-                if (isVisible) View.VISIBLE else View.INVISIBLE
-            binding.recyclerView.visibility =
-                if (isVisible) View.INVISIBLE else View.VISIBLE
-        }
-        // Update the visibility of the save button according to the selected action
-        viewModel.isSaveButtonVisible.observe(viewLifecycleOwner) { isVisible ->
-            binding.bSave.visibility = if (isVisible) View.VISIBLE else View.INVISIBLE
-        }
-        // Update the list of pictures to display
-        viewModel.picturesUri.observe(viewLifecycleOwner) { pictures ->
-            adapter.submitList(pictures)
-        }
-        // Show the generic dialog to request permissions from the user
-        // after the rationale dialog has been understood
-        permissionViewModel.isMessageUnderstood.observe(viewLifecycleOwner) { isUnderstood ->
-            if (isUnderstood) {
-                when (permissionViewModel.requiredPermission.value) {
-                    android.Manifest.permission.READ_MEDIA_IMAGES,
-                    android.Manifest.permission.READ_EXTERNAL_STORAGE ->
-                        // Show the generic dialog to ask for permissions
-                        requestPermissionLauncher.launch(permissionViewModel.requiredPermission.value!!)
-                    else -> {}
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // Display the content of the selected text file
+                viewModel.fileContent.collect { fileContent ->
+                    binding.etFileContents.setText(fileContent)
                 }
-                // Clear the understood flag
-                permissionViewModel.setMessageUnderstood(false)
             }
         }
-        // Display an error message when something has gone wrong
-        viewModel.error.observe(viewLifecycleOwner) { error ->
-            if (error != null) {
-                // Select the message according to the received exception
-                val message = when (error) {
-                    is Resources.NotFoundException -> getString(R.string.resource_not_found)
-                    is FileNotFoundException -> getString(R.string.file_not_found)
-                    is ExternalStorageNotReadable -> getString(R.string.external_storage_unreadable)
-                    is ExternalStorageNotWritable -> getString(R.string.external_storage_unwritable)
-                    else -> getString(R.string.unknown_error)
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { uiState ->
+                    // Prevent the edition of files that cannot be updated
+                    binding.etFileContents.isEnabled = uiState.isFileContentEditable
+                    // Update the visibility of the edit text and RecyclerView according to the selected action
+                    binding.tilFileContent.visibility =
+                        if (uiState.isFileContentVisible) View.VISIBLE else View.INVISIBLE
+                    binding.recyclerView.visibility =
+                        if (uiState.isFileContentVisible) View.INVISIBLE else View.VISIBLE
+                    // Update the visibility of the save button according to the selected action
+                    binding.bSave.visibility =
+                        if (uiState.isSaveButtonVisible) View.VISIBLE else View.INVISIBLE
                 }
-                // Display the message
-                Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
-                // Clear the error flag
-                viewModel.clearError()
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // Update the list of pictures to display
+                viewModel.picturesUri.collect { pictures ->
+                    adapter.submitList(pictures)
+                }
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // Show the generic dialog to request permissions from the user
+                // after the rationale dialog has been understood
+                permissionViewModel.isMessageUnderstood.collect { isUnderstood ->
+                    if (isUnderstood) {
+                        when (permissionViewModel.requiredPermission.value) {
+                            android.Manifest.permission.READ_MEDIA_IMAGES,
+                            android.Manifest.permission.READ_EXTERNAL_STORAGE ->
+                                // Show the generic dialog to ask for permissions
+                                requestPermissionLauncher.launch(permissionViewModel.requiredPermission.value)
+
+                            else -> {}
+                        }
+                        // Clear the understood flag
+                        permissionViewModel.setMessageUnderstood(false)
+                    }
+                }
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // Display an error message when something has gone wrong
+                viewModel.error.collect { error ->
+                    if (error != null) {
+                        // Select the message according to the received exception
+                        val message = when (error) {
+                            is Resources.NotFoundException -> getString(R.string.resource_not_found)
+                            is FileNotFoundException -> getString(R.string.file_not_found)
+                            is ExternalStorageNotReadable -> getString(R.string.external_storage_unreadable)
+                            is ExternalStorageNotWritable -> getString(R.string.external_storage_unwritable)
+                            else -> getString(R.string.unknown_error)
+                        }
+                        // Display the message
+                        Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+                        // Clear the error flag
+                        viewModel.clearError()
+                    }
+                }
             }
         }
     }
@@ -339,7 +360,9 @@ class FilesFragment : Fragment(R.layout.fragment_files) {
                         .format(DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm"))
                 }.txt"
             )
-        // Launch the Intent of there is any activity that can handle it
+        // Set the text to write in a text file in public shared storage
+        viewModel.setPublicOtherFileText(binding.etFileContents.text.toString())
+        // Launch the Intent if there is any activity that can handle it
         if (intent.resolveActivity(requireActivity().packageManager) != null) {
             writePublicOtherLauncher.launch(intent)
         } else {
@@ -356,7 +379,7 @@ class FilesFragment : Fragment(R.layout.fragment_files) {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
             .addCategory(Intent.CATEGORY_OPENABLE)
             .setType("text/plain")
-        // Launch the Intent of there is any activity that can handle it
+        // Launch the Intent if there is any activity that can handle it
         if (intent.resolveActivity(requireActivity().packageManager) != null) {
             readPublicOtherLauncher.launch(intent)
         } else {

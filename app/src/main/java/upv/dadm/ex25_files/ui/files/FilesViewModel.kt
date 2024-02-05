@@ -12,15 +12,29 @@
 package upv.dadm.ex25_files.ui.files
 
 import android.content.Intent
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import upv.dadm.ex25_files.data.files.FilesRepository
 import upv.dadm.ex25_files.model.Picture
 import javax.inject.Inject
+
+/**
+ * A FilesUiState object containing
+ * whether to display the text file contents (true) or
+ * the PNG images in the Images storage space (false),
+ * whether the file is editable,
+ * and the visibility of the save button
+ */
+data class FilesUiState(
+    val isFileContentVisible: Boolean,
+    val isFileContentEditable: Boolean,
+    val isSaveButtonVisible: Boolean
+)
 
 /**
  * Holds information about the file to be displayed.
@@ -32,48 +46,37 @@ class FilesViewModel @Inject constructor(
 ) : ViewModel() {
 
     // Backing property for the contents of the text file
-    private val _fileContent = MutableLiveData<String>()
+    private val _fileContent = MutableStateFlow("")
 
     // Contents of the text file
-    val fileContent: LiveData<String>
-        get() = _fileContent
+    val fileContent = _fileContent.asStateFlow()
 
-    // Backing property for whether the file is editable
-    private val _isFileContentEditable = MutableLiveData(false)
+    // UI state (mutable): display text/images, text is editable, and save button is visible
+    private val _uiState = MutableStateFlow(
+        FilesUiState(
+            isFileContentVisible = false,
+            isFileContentEditable = false,
+            isSaveButtonVisible = false
+        )
+    )
 
-    // Flag stating whether the file is editable
-    val isFileContentEditable: LiveData<Boolean>
-        get() = _isFileContentEditable
-
-    // Backing property for whether to display the text file contents (true) or
-    // the PNG images in the Images storage space (false)
-    private val _isFileContentVisible = MutableLiveData(false)
-
-    // Flag stating whether to display the text file contents (true) or
-    // the PNG images in the Images storage space (false)
-    val isFileContentVisible: LiveData<Boolean>
-        get() = _isFileContentVisible
-
-    // Backing property for the visibility of the save button
-    private val _isSaveButtonVisible = MutableLiveData(false)
-
-    // Visibility of the save button
-    val isSaveButtonVisible: LiveData<Boolean>
-        get() = _isSaveButtonVisible
+    // UI state (immutable)
+    val uiState = _uiState.asStateFlow()
 
     // Backing property for the kind of error received (null - no error)
-    private val _error = MutableLiveData<Throwable?>()
+    private val _error = MutableStateFlow<Throwable?>(null)
 
     // Kind of error received (null - no error)
-    val error: LiveData<Throwable?>
-        get() = _error
+    val error = _error.asStateFlow()
 
     // Backing property for the list of Picture objects to display
-    private val _pictures = MutableLiveData<List<Picture>?>()
+    private val _pictures = MutableStateFlow<List<Picture>?>(null)
 
     // List of Picture objects to display
-    val picturesUri: LiveData<List<Picture>?>
-        get() = _pictures
+    val picturesUri = _pictures.asStateFlow()
+
+    // Backing property for the text to save in a text file in public shared storage
+    private val _textPublicOtherFile = MutableStateFlow("")
 
     /**
      * Get the content of a text resource file (/res/raw).
@@ -86,13 +89,13 @@ class FilesViewModel @Inject constructor(
                 // Check the result
                 .fold(
                     onSuccess = { result ->
-                        _fileContent.value = result
+                        _fileContent.update { result }
                         // Text is not editable
                         enableVisibilityOnly()
                     },
                     onFailure = { exception ->
-                        _fileContent.value = ""
-                        _error.value = exception
+                        _fileContent.update { "" }
+                        _error.update { exception }
                         disableVisibilityEditionAndSaving()
                     }
                 )
@@ -110,13 +113,13 @@ class FilesViewModel @Inject constructor(
                 // Check the results
                 .fold(
                     onSuccess = { result ->
-                        _fileContent.value = result
+                        _fileContent.update { result }
                         // Text is not editable
                         enableVisibilityOnly()
                     },
                     onFailure = { exception ->
-                        _fileContent.value = ""
-                        _error.value = exception
+                        _fileContent.update { "" }
+                        _error.update { exception }
                         disableVisibilityEditionAndSaving()
                     }
                 )
@@ -131,14 +134,12 @@ class FilesViewModel @Inject constructor(
         viewModelScope.launch {
             // Get the file content
             filesRepository.getPrivateInternalFileContent()
-                // CHeck the result
+                // Check the result
                 .fold(
-                    onSuccess = { result ->
-                        _fileContent.value = result
-                    },
+                    onSuccess = { result -> _fileContent.update { result } },
                     onFailure = { exception ->
-                        _error.value = exception
-                        _fileContent.value = ""
+                        _fileContent.update { "" }
+                        _error.update { exception }
                     }
                 )
             // The file content can be edited
@@ -152,12 +153,13 @@ class FilesViewModel @Inject constructor(
     fun savePrivateInternalFile(fileContent: String) =
         // As it is a blocking operation it should be executed in a thread
         viewModelScope.launch {
+            _fileContent.update { fileContent }
             // Save the file content
             filesRepository.setPrivateInternalFileContent(fileContent)
                 // Check result
                 .fold(
                     onSuccess = {}, // Nothing to do
-                    onFailure = { exception -> _error.value = exception }
+                    onFailure = { exception -> _error.update { exception } }
                 )
         }
 
@@ -172,12 +174,10 @@ class FilesViewModel @Inject constructor(
             filesRepository.getPrivateInternalCacheFileContent()
                 // Check the result
                 .fold(
-                    onSuccess = { result ->
-                        _fileContent.value = result
-                    },
+                    onSuccess = { result -> _fileContent.update { result } },
                     onFailure = { exception ->
-                        _error.value = exception
-                        _fileContent.value = ""
+                        _fileContent.update { "" }
+                        _error.update { exception }
                     }
                 )
             // The file content can be edited
@@ -191,12 +191,13 @@ class FilesViewModel @Inject constructor(
     fun savePrivateInternalCacheFile(fileContent: String) =
         // As it is a blocking operation it should be executed in a thread
         viewModelScope.launch {
+            _fileContent.update { fileContent }
             // Save the file content
             filesRepository.setPrivateInternalCacheFileContent(fileContent)
                 // Check the result
                 .fold(
                     onSuccess = {}, // Nothing to do
-                    onFailure = { exception -> _error.value = exception }
+                    onFailure = { exception -> _error.update { exception } }
                 )
         }
 
@@ -211,12 +212,10 @@ class FilesViewModel @Inject constructor(
             filesRepository.getPrivateExternalFileContent()
                 // Check the result
                 .fold(
-                    onSuccess = { result ->
-                        _fileContent.value = result
-                    },
+                    onSuccess = { result -> _fileContent.update { result } },
                     onFailure = { exception ->
-                        _error.value = exception
-                        _fileContent.value = ""
+                        _fileContent.update { "" }
+                        _error.update { exception }
                     }
                 )
             // The file content can be edited
@@ -230,12 +229,13 @@ class FilesViewModel @Inject constructor(
     fun savePrivateExternalFile(fileContent: String) =
         // As it is a blocking operation it should be executed in a thread
         viewModelScope.launch {
+            _fileContent.update { fileContent }
             // Save the file content
             filesRepository.setPrivateExternalFileContent(fileContent)
                 // Check the result
                 .fold(
                     onSuccess = {}, // Nothing to do
-                    onFailure = { exception -> _error.value = exception }
+                    onFailure = { exception -> _error.update { exception } }
                 )
         }
 
@@ -250,12 +250,10 @@ class FilesViewModel @Inject constructor(
             filesRepository.getPrivateExternalCacheFileContent()
                 // Check the result
                 .fold(
-                    onSuccess = { result ->
-                        _fileContent.value = result
-                    },
+                    onSuccess = { result -> _fileContent.update { result } },
                     onFailure = { exception ->
-                        _fileContent.value = ""
-                        _error.value = exception
+                        _fileContent.update { "" }
+                        _error.update { exception }
                     }
                 )
             // The file content can be edited
@@ -269,12 +267,13 @@ class FilesViewModel @Inject constructor(
     fun savePrivateExternalCacheFile(fileContent: String) =
         // As it is a blocking operation it should be executed in a thread
         viewModelScope.launch {
+            _fileContent.update { fileContent }
             // Save the file content
             filesRepository.setPrivateExternalCacheFileContent(fileContent)
                 // Check the result
                 .fold(
                     onSuccess = {}, // Nothing to do
-                    onFailure = { exception -> _error.value = exception }
+                    onFailure = { exception -> _error.update { exception } }
                 )
         }
 
@@ -289,13 +288,11 @@ class FilesViewModel @Inject constructor(
             filesRepository.getPrivateExternalPictureFiles()
                 // Check the result
                 .fold(
-                    onSuccess = { result ->
-                        _pictures.value = result
-                        // Enable the creation of a new PNG image file
-                        enableSavingOnly()
-                    },
-                    onFailure = { exception -> _error.value = exception }
+                    onSuccess = { result -> _pictures.update { result } },
+                    onFailure = { exception -> _error.update { exception } }
                 )
+            // Enable the creation of a new PNG image file
+            enableSavingOnly()
         }
 
     /**
@@ -313,7 +310,7 @@ class FilesViewModel @Inject constructor(
                         // Reload the list of images to display the new one
                         loadPrivateExternalPictureFiles()
                     },
-                    onFailure = { exception -> _error.value = exception }
+                    onFailure = { exception -> _error.update { exception } }
                 )
         }
 
@@ -328,13 +325,11 @@ class FilesViewModel @Inject constructor(
             filesRepository.getPublicExternalPictureFiles()
                 // Check the result
                 .fold(
-                    onSuccess = { result ->
-                        _pictures.value = result
-                        // Enable the creation of a new PNG image file
-                        enableSavingOnly()
-                    },
-                    onFailure = { exception -> _error.value = exception }
+                    onSuccess = { result -> _pictures.update { result } },
+                    onFailure = { exception -> _error.update { exception } }
                 )
+            // Enable the creation of a new PNG image file
+            enableSavingOnly()
         }
 
     /**
@@ -348,7 +343,7 @@ class FilesViewModel @Inject constructor(
             filesRepository.setPublicExternalPictureFileContent()
                 // Check the result
                 .fold(
-                    onSuccess = { }, // Nothing to do
+                    onSuccess = { loadPublicPictureFiles() },
                     onFailure = { exception -> _error.value = exception }
                 )
         }
@@ -357,21 +352,24 @@ class FilesViewModel @Inject constructor(
      * Get the content of a text file from public shared storage
      * (/sdcard/Download).
      */
-    fun loadPublicOtherFile(intent: Intent) =
+    fun loadPublicOtherFile(intent: Intent?) =
         // As it is a blocking operation it should be executed in a thread
         viewModelScope.launch {
-            // Load the file content
-            filesRepository.getPublicExternalOtherFile(intent)
-                // Check the result
-                .fold(
-                    onSuccess = { result ->
-                        _fileContent.value = result
-                    },
-                    onFailure = { exception ->
-                        _error.value = exception
-                        _fileContent.value = ""
-                    }
-                )
+            if (intent != null) {
+                // Load the file content
+                filesRepository.getPublicExternalOtherFile(intent)
+                    // Check the result
+                    .fold(
+                        onSuccess = { result -> _fileContent.update { result } },
+                        onFailure = { exception ->
+                            _fileContent.update { "" }
+                            _error.update { exception }
+                        }
+                    )
+            } else {
+                // The load operation is cancelled
+                _fileContent.update { "" }
+            }
             // The file content can be edited
             enableVisibilityEditionAndSaving()
         }
@@ -380,53 +378,74 @@ class FilesViewModel @Inject constructor(
      * Update the content of a text file from public shared storage
      * (/sdcard/Download).
      */
-    fun savePublicOtherFile(intent: Intent, content: String) =
+    fun savePublicOtherFile(intent: Intent) =
         // As it is a blocking operation it should be executed in a thread
         viewModelScope.launch {
+            _fileContent.update { _textPublicOtherFile.value }
             // Save the file content
-            filesRepository.setPublicExternalOtherFileContent(intent, content)
+            filesRepository.setPublicExternalOtherFileContent(intent, _textPublicOtherFile.value)
                 // Check the result
                 .fold(
                     onSuccess = { }, // Nothing to do
-                    onFailure = { exception -> _error.value = exception }
+                    onFailure = { exception -> _error.update { exception } }
                 )
         }
 
     /**
+     * Sets the text to write to a text file in public shared storage.
+     */
+    fun setPublicOtherFileText(text: String) {
+        _textPublicOtherFile.update { text }
+    }
+
+    /**
      * Makes visible and enables the edit text field and the save button.
      */
-    private fun enableVisibilityEditionAndSaving() {
-        _isFileContentVisible.value = true
-        _isFileContentEditable.value = true
-        _isSaveButtonVisible.value = true
-    }
+    private fun enableVisibilityEditionAndSaving() =
+        _uiState.update {
+            FilesUiState(
+                isFileContentVisible = true,
+                isFileContentEditable = true,
+                isSaveButtonVisible = true
+            )
+        }
+
 
     /**
      * Makes visible the edit text file, but it cannot be edited (thus, the save button is hidden).
      */
-    private fun enableVisibilityOnly() {
-        _isFileContentVisible.value = true
-        _isFileContentEditable.value = false
-        _isSaveButtonVisible.value = false
-    }
+    private fun enableVisibilityOnly() =
+        _uiState.update {
+            FilesUiState(
+                isFileContentVisible = true,
+                isFileContentEditable = false,
+                isSaveButtonVisible = false
+            )
+        }
 
     /**
-     * Hide the edit text and the save button.
+     * Hides the edit text and the save button.
      */
-    private fun disableVisibilityEditionAndSaving() {
-        _isFileContentVisible.value = false
-        _isFileContentEditable.value = false
-        _isSaveButtonVisible.value = false
-    }
+    private fun disableVisibilityEditionAndSaving() =
+        _uiState.update {
+            FilesUiState(
+                isFileContentVisible = false,
+                isFileContentEditable = false,
+                isSaveButtonVisible = false
+            )
+        }
 
     /**
-     * Display the RecyclerView and the save button.
+     * Displays the RecyclerView and the save button.
      */
-    private fun enableSavingOnly() {
-        _isFileContentVisible.value = false
-        _isFileContentEditable.value = false
-        _isSaveButtonVisible.value = true
-    }
+    private fun enableSavingOnly() =
+        _uiState.update {
+            FilesUiState(
+                isFileContentVisible = false,
+                isFileContentEditable = false,
+                isSaveButtonVisible = true
+            )
+        }
 
     /**
      * Clears the error received.
