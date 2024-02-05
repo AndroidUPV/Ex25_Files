@@ -35,8 +35,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import upv.dadm.ex25_files.R
 import upv.dadm.ex25_files.databinding.FragmentFilesBinding
-import upv.dadm.ex25_files.utils.ExternalStorageNotReadable
-import upv.dadm.ex25_files.utils.ExternalStorageNotWritable
+import upv.dadm.ex25_files.utils.ExternalStorageNotReadableException
+import upv.dadm.ex25_files.utils.ExternalStorageNotWritableException
 import java.io.FileNotFoundException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -295,8 +295,8 @@ class FilesFragment : Fragment(R.layout.fragment_files) {
                         val message = when (error) {
                             is Resources.NotFoundException -> getString(R.string.resource_not_found)
                             is FileNotFoundException -> getString(R.string.file_not_found)
-                            is ExternalStorageNotReadable -> getString(R.string.external_storage_unreadable)
-                            is ExternalStorageNotWritable -> getString(R.string.external_storage_unwritable)
+                            is ExternalStorageNotReadableException -> getString(R.string.external_storage_unreadable)
+                            is ExternalStorageNotWritableException -> getString(R.string.external_storage_unwritable)
                             else -> getString(R.string.unknown_error)
                         }
                         // Display the message

@@ -14,8 +14,8 @@ package upv.dadm.ex25_files.data.files
 import android.content.Intent
 import android.os.Environment
 import upv.dadm.ex25_files.model.Picture
-import upv.dadm.ex25_files.utils.ExternalStorageNotReadable
-import upv.dadm.ex25_files.utils.ExternalStorageNotWritable
+import upv.dadm.ex25_files.utils.ExternalStorageNotReadableException
+import upv.dadm.ex25_files.utils.ExternalStorageNotWritableException
 import javax.inject.Inject
 
 /**
@@ -73,7 +73,7 @@ class FilesRepositoryImpl @Inject constructor(
             filesDataSource.getPrivateExternalFileContent()
         // Display and error message otherwise
         else
-            Result.failure(ExternalStorageNotReadable())
+            Result.failure(ExternalStorageNotReadableException())
 
     /**
      * Updates the content of a text file from private external storage.
@@ -84,7 +84,7 @@ class FilesRepositoryImpl @Inject constructor(
             filesDataSource.setPrivateExternalFileContent(content)
         // Display and error message otherwise
         else
-            Result.failure(ExternalStorageNotWritable())
+            Result.failure(ExternalStorageNotWritableException())
 
     /**
      * Returns the content of a text file cached in private external storage.
@@ -95,7 +95,7 @@ class FilesRepositoryImpl @Inject constructor(
             filesDataSource.getPrivateExternalCacheFileContent()
         // Display and error message otherwise
         else
-            Result.failure(ExternalStorageNotReadable())
+            Result.failure(ExternalStorageNotReadableException())
 
     /**
      * Updates the content of a text file cached in private external storage.
@@ -106,7 +106,7 @@ class FilesRepositoryImpl @Inject constructor(
             filesDataSource.setPrivateExternalCacheFileContent(content)
         // Display and error message otherwise
         else
-            Result.failure(ExternalStorageNotWritable())
+            Result.failure(ExternalStorageNotWritableException())
 
     /**
      * Returns a list of PNG images from private external storage.
@@ -117,7 +117,7 @@ class FilesRepositoryImpl @Inject constructor(
             filesDataSource.getPrivateExternalPictureFiles()
         // Display and error message otherwise
         else
-            Result.failure(ExternalStorageNotReadable())
+            Result.failure(ExternalStorageNotReadableException())
 
     /**
      * Creates a new PNG image file in private external storage.
@@ -128,7 +128,7 @@ class FilesRepositoryImpl @Inject constructor(
             filesDataSource.setPrivateExternalPictureFileContent()
         // Display and error message otherwise
         else
-            Result.failure(ExternalStorageNotWritable())
+            Result.failure(ExternalStorageNotWritableException())
 
     /**
      * Returns a list of PNG images from public shared storage.

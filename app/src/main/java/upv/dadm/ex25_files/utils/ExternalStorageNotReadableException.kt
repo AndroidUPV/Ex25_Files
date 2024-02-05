@@ -14,4 +14,4 @@ package upv.dadm.ex25_files.utils
 /**
  * Exception used to notify that the external storage space is not in read mode.
  */
-class ExternalStorageNotReadable: Exception()
+class ExternalStorageNotReadableException: Exception()

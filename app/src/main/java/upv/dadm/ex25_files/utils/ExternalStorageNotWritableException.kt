@@ -14,4 +14,4 @@ package upv.dadm.ex25_files.utils
 /**
  * Exception used to notify that the external storage space is not in write mode.
  */
-class ExternalStorageNotWritable : Exception()
+class ExternalStorageNotWritableException : Exception()
