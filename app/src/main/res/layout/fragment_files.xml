@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?><!--
-  ~ Copyright (c) 2022-2023 Universitat Politècnica de València
+  ~ Copyright (c) 2022-2024 Universitat Politècnica de València
   ~ Authors: David de Andrés and Juan Carlos Ruiz
   ~          Fault-Tolerant Systems
   ~          Instituto ITACA
@@ -13,76 +13,82 @@
   ~ A TextField displays the text that file stores and the user can modify it when appropriate.
   ~ A RecyclerView displays the different PNG images available in the Images storage space.
   -->
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="16dp">
+    android:layout_height="wrap_content"
+    android:layout_gravity="top">
 
-    <!-- Dropdown menu representing the different options available for storage space-->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilFileStorageType"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-        android:layout_width="0dp"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/hint_storage_type"
-        android:labelFor="@id/tvFileStorageType"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <AutoCompleteTextView
-            android:id="@+id/tvFileStorageType"
-            android:layout_width="match_parent"
+        android:padding="@dimen/margins">
+        <!-- Dropdown menu representing the different options available for storage space-->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilFileStorageType"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:inputType="none"
-            app:simpleItems="@array/file_storage_type" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:hint="@string/hint_storage_type"
+            android:labelFor="@id/tvFileStorageType"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-    <!--Displays the content of the file, which the user can modify-->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilFileContent"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:hint="@string/hint_contents"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tilFileStorageType">
+            <AutoCompleteTextView
+                android:id="@+id/tvFileStorageType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                app:simpleItems="@array/file_storage_type" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etFileContents"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </com.google.android.material.textfield.TextInputLayout>
+        <!--Displays the content of the file, which the user can modify-->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilFileContent"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margins"
+            android:hint="@string/hint_contents"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tilFileStorageType">
 
-    <!--
-      ~ Saves changes in the content of the selected file or
-      ~ creates a new image file when accessing the Images storage space.
-      -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/bSave"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/save_file"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tilFileContent" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etFileContents"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-    <!--Displays a grid with PNG images in the Images storage space-->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        android:orientation="vertical"
-        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/bSave"
-        app:spanCount="3"
-        tools:listitem="@layout/item_picture" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <!--
+          ~ Saves changes in the content of the selected file or
+          ~ creates a new image file when accessing the Images storage space.
+          -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/bSave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margins"
+            android:text="@string/save_file"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tilFileContent" />
+
+        <!--Displays a grid with PNG images in the Images storage space-->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margins"
+            android:orientation="vertical"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/bSave"
+            app:spanCount="3"
+            tools:listitem="@layout/item_picture" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

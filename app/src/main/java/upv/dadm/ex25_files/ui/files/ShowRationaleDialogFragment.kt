@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Universitat Politècnica de València
+ * Copyright (c) 2022-2024 Universitat Politècnica de València
  * Authors: David de Andrés and Juan Carlos Ruiz
  *          Fault-Tolerant Systems
  *          Instituto ITACA
@@ -31,7 +31,7 @@ class ShowRationaleDialogFragment : DialogFragment() {
         val title: String
         val message: String
         // Configure the dialog's title and description according to the required permission
-        when (viewModel.requiredPermission.value!!) {
+        when (viewModel.requiredPermission.value) {
             android.Manifest.permission.READ_MEDIA_IMAGES -> {
                 title = getString(R.string.title_read_media_images)
                 message = getString(R.string.message_read_media_images)
